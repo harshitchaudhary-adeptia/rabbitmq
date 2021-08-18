@@ -1,3 +1,9 @@
+#
+# NOTE: THIS DOCKERFILE IS GENERATED VIA "apply-templates.sh"
+#
+# PLEASE DO NOT EDIT IT DIRECTLY.
+#
+
 # The official Canonical Ubuntu Focal image is ideal from a security perspective,
 # especially for the enterprises that we, the RabbitMQ team, have to deal with
 FROM ubuntu:20.04
@@ -6,7 +12,7 @@ RUN set -eux; \
 	apt-get update; \
 	apt-get install -y --no-install-recommends \
 # grab gosu for easy step-down from root
-	gosu \
+		gosu \
 	; \
 	rm -rf /var/lib/apt/lists/*; \
 # verify that the "gosu" binary works
@@ -18,15 +24,15 @@ ARG PGP_KEYSERVER=ha.pool.sks-keyservers.net
 # run the build with a different PGP_KEYSERVER, e.g. docker build --tag rabbitmq:3.8 --build-arg PGP_KEYSERVER=pgpkeys.eu 3.8/ubuntu
 # For context, see https://github.com/docker-library/official-images/issues/4252
 
-ENV OPENSSL_VERSION {{ .openssl.version }}
-ENV OPENSSL_SOURCE_SHA256="{{ .openssl.sha256 }}"
+ENV OPENSSL_VERSION 1.1.1k
+ENV OPENSSL_SOURCE_SHA256="892a0875b9872acd04a9fde79b1f943075d5ea162415de3047c327df33fbaee5"
 # https://www.openssl.org/community/omc.html
-ENV OPENSSL_PGP_KEY_IDS='{{["8657 ABB2 60F0 56B1 E519 0839 D9C4 D26D 0E60 4491","5B25 45DA B219 95F4 088C EFAA 36CE E4DE B00C FE33","ED23 0BEC 4D4F 2518 B9D7 DF41 F0DB 4D21 C1D3 5231","C1F3 3DD8 CE1D 4CC6 13AF 14DA 9195 C482 41FB F7DD","7953 AC1F BC3D C8B3 B292 393E D5E9 E43F 7DF9 EE8C","E5E5 2560 DD91 C556 DDBD A5D0 2064 C536 41C2 5E5D"] | map("0x" + gsub(" "; "")) | join(" ") }}'
+ENV OPENSSL_PGP_KEY_IDS="0x8657ABB260F056B1E5190839D9C4D26D0E604491 0x5B2545DAB21995F4088CEFAA36CEE4DEB00CFE33 0xED230BEC4D4F2518B9D7DF41F0DB4D21C1D35231 0xC1F33DD8CE1D4CC613AF14DA9195C48241FBF7DD 0x7953AC1FBC3DC8B3B292393ED5E9E43F7DF9EE8C 0xE5E52560DD91C556DDBDA5D02064C53641C25E5D"
 
-ENV OTP_VERSION {{ .otp.version }}
+ENV OTP_VERSION 24.0.2
 # TODO add PGP checking when the feature will be added to Erlang/OTP's build system
 # https://erlang.org/pipermail/erlang-questions/2019-January/097067.html
-ENV OTP_SOURCE_SHA256="{{ .otp.sha256 }}"
+ENV OTP_SOURCE_SHA256="882e8a93194c32cf8335f62c86489c1850d5a5ec9bdfa35fff55b9317213ab8e"
 
 # Install dependencies required to build Erlang/OTP from source
 # https://erlang.org/doc/installation_guide/INSTALL.html
@@ -188,7 +194,7 @@ RUN set -eux; \
 	ln -sf "$RABBITMQ_DATA_DIR/.erlang.cookie" /root/.erlang.cookie
 
 # Use the latest stable RabbitMQ release (https://www.rabbitmq.com/download.html)
-ENV RABBITMQ_VERSION {{ .version }}
+ENV RABBITMQ_VERSION 3.8.16
 # https://www.rabbitmq.com/signatures.html#importing-gpg
 ENV RABBITMQ_PGP_KEY_ID="0x0A9AF2115F4687BD29803A206B73A36E6026DFCA"
 ENV RABBITMQ_HOME=/opt/rabbitmq
