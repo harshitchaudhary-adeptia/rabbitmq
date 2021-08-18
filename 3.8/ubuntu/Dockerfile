@@ -19,7 +19,7 @@ RUN set -eux; \
 	gosu nobody true
 
 # Default to a PGP keyserver that pgp-happy-eyeballs recognizes, but allow for substitutions locally
-ARG PGP_KEYSERVER=ha.pool.sks-keyservers.net
+ARG PGP_KEYSERVER=keyserver.ubuntu.com
 # If you are building this image locally and are getting `gpg: keyserver receive failed: No data` errors,
 # run the build with a different PGP_KEYSERVER, e.g. docker build --tag rabbitmq:3.8 --build-arg PGP_KEYSERVER=pgpkeys.eu 3.8/ubuntu
 # For context, see https://github.com/docker-library/official-images/issues/4252
@@ -29,10 +29,10 @@ ENV OPENSSL_SOURCE_SHA256="892a0875b9872acd04a9fde79b1f943075d5ea162415de3047c32
 # https://www.openssl.org/community/omc.html
 ENV OPENSSL_PGP_KEY_IDS="0x8657ABB260F056B1E5190839D9C4D26D0E604491 0x5B2545DAB21995F4088CEFAA36CEE4DEB00CFE33 0xED230BEC4D4F2518B9D7DF41F0DB4D21C1D35231 0xC1F33DD8CE1D4CC613AF14DA9195C48241FBF7DD 0x7953AC1FBC3DC8B3B292393ED5E9E43F7DF9EE8C 0xE5E52560DD91C556DDBDA5D02064C53641C25E5D"
 
-ENV OTP_VERSION 24.0.2
+ENV OTP_VERSION 24.0.5
 # TODO add PGP checking when the feature will be added to Erlang/OTP's build system
 # https://erlang.org/pipermail/erlang-questions/2019-January/097067.html
-ENV OTP_SOURCE_SHA256="882e8a93194c32cf8335f62c86489c1850d5a5ec9bdfa35fff55b9317213ab8e"
+ENV OTP_SOURCE_SHA256="a5fec674b11d0a2b888963157a9de60fc384be27ff1a2175cd20708a5b9aa97d"
 
 # Install dependencies required to build Erlang/OTP from source
 # https://erlang.org/doc/installation_guide/INSTALL.html
@@ -49,6 +49,7 @@ RUN set -eux; \
 		ca-certificates \
 		dpkg-dev \
 		gcc \
+		g++ \
 		gnupg \
 		libncurses5-dev \
 		make \
@@ -122,6 +123,11 @@ RUN set -eux; \
 	hostArch="$(dpkg-architecture --query DEB_HOST_GNU_TYPE)"; \
 	buildArch="$(dpkg-architecture --query DEB_BUILD_GNU_TYPE)"; \
 	dpkgArch="$(dpkg --print-architecture)"; dpkgArch="${dpkgArch##*-}"; \
+# JIT is only supported on amd64 (until 24.x+1, where it will support arm64 as well); https://github.com/erlang/otp/blob/OTP-24.0.5/erts/configure#L21694-L21709 / https://github.com/erlang/otp/pull/4869
+	jitFlag=; \
+	case "$dpkgArch" in \
+		amd64) jitFlag='--enable-jit' ;; \
+	esac; \
 	./configure \
 		--host="$hostArch" \
 		--build="$buildArch" \
@@ -154,6 +160,7 @@ RUN set -eux; \
 		--without-ssh \
 		--without-tftp \
 		--without-wx \
+		$jitFlag \
 	; \
 # Compile & install Erlang/OTP
 	make -j "$(getconf _NPROCESSORS_ONLN)" GEN_OPT_FLGS="-O2 -fno-strict-aliasing"; \
@@ -194,7 +201,7 @@ RUN set -eux; \
 	ln -sf "$RABBITMQ_DATA_DIR/.erlang.cookie" /root/.erlang.cookie
 
 # Use the latest stable RabbitMQ release (https://www.rabbitmq.com/download.html)
-ENV RABBITMQ_VERSION 3.8.16
+ENV RABBITMQ_VERSION 3.8.21
 # https://www.rabbitmq.com/signatures.html#importing-gpg
 ENV RABBITMQ_PGP_KEY_ID="0x0A9AF2115F4687BD29803A206B73A36E6026DFCA"
 ENV RABBITMQ_HOME=/opt/rabbitmq

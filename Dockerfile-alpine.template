@@ -1,5 +1,5 @@
 # Alpine Linux is not officially supported by the RabbitMQ team -- use at your own risk!
-FROM alpine:3.13
+FROM alpine:3.14
 
 RUN apk add --no-cache \
 # grab su-exec for easy step-down from root
@@ -10,7 +10,7 @@ RUN apk add --no-cache \
 		procps
 
 # Default to a PGP keyserver that pgp-happy-eyeballs recognizes, but allow for substitutions locally
-ARG PGP_KEYSERVER=ha.pool.sks-keyservers.net
+ARG PGP_KEYSERVER=keyserver.ubuntu.com
 # If you are building this image locally and are getting `gpg: keyserver receive failed: No data` errors,
 # run the build with a different PGP_KEYSERVER, e.g. docker build --tag rabbitmq:3.8 --build-arg PGP_KEYSERVER=pgpkeys.eu 3.8/ubuntu
 # For context, see https://github.com/docker-library/official-images/issues/4252
@@ -59,6 +59,7 @@ RUN set -eux; \
 		autoconf \
 		dpkg-dev dpkg \
 		gcc \
+		g++ \
 		gnupg \
 		libc-dev \
 		linux-headers \
@@ -131,6 +132,11 @@ RUN set -eux; \
 	hostArch="$(dpkg-architecture --query DEB_HOST_GNU_TYPE)"; \
 	buildArch="$(dpkg-architecture --query DEB_BUILD_GNU_TYPE)"; \
 	dpkgArch="$(dpkg --print-architecture)"; dpkgArch="${dpkgArch##*-}"; \
+# JIT is only supported on amd64 (until 24.x+1, where it will support arm64 as well); https://github.com/erlang/otp/blob/OTP-24.0.5/erts/configure#L21694-L21709 / https://github.com/erlang/otp/pull/4869
+	jitFlag=; \
+	case "$dpkgArch" in \
+		amd64) jitFlag='--enable-jit' ;; \
+	esac; \
 	./configure \
 		--host="$hostArch" \
 		--build="$buildArch" \
@@ -163,6 +169,7 @@ RUN set -eux; \
 		--without-ssh \
 		--without-tftp \
 		--without-wx \
+		$jitFlag \
 	; \
 # Compile & install Erlang/OTP
 	make -j "$(getconf _NPROCESSORS_ONLN)" GEN_OPT_FLGS="-O2 -fno-strict-aliasing"; \
@@ -268,6 +275,9 @@ VOLUME $RABBITMQ_DATA_DIR
 # https://docs.docker.com/samples/library/ubuntu/#locales
 ENV LANG=C.UTF-8 LANGUAGE=C.UTF-8 LC_ALL=C.UTF-8
 
+{{ if ([ "3.8", "3.8-rc" ] | index(env.version)) then "" else ( -}}
+COPY --chown=rabbitmq:rabbitmq 10-default-guest-user.conf /etc/rabbitmq/conf.d/
+{{ ) end -}}
 COPY docker-entrypoint.sh /usr/local/bin/
 ENTRYPOINT ["docker-entrypoint.sh"]
 
