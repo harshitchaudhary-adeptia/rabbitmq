@@ -58,7 +58,7 @@ pipeline
     					 				echo "$LATEST_TAG"
 					 					fi
                             		                                echo "${password} | docker login -u ${username} ${NEXUS_DOCKER_REGISTRY_URL} --password-stdin"
-										docker build -t ${DOCKER_IMAGE_URL}/${PROJECT_NAME}:${LATEST_TAG} 3.8-rc/ubuntu/
+										docker build -t ${DOCKER_IMAGE_URL}/${PROJECT_NAME}:${LATEST_TAG} 3.8/alpine/
 										docker push ${DOCKER_IMAGE_URL}/${PROJECT_NAME}:${LATEST_TAG}
 										aws ecr get-login-password --region us-east-2 | docker login --username AWS --password-stdin 716848636303.dkr.ecr.us-east-2.amazonaws.com
 										docker tag ${DOCKER_IMAGE_URL}/${PROJECT_NAME}:${LATEST_TAG} 716848636303.dkr.ecr.us-east-2.amazonaws.com/adeptia/${PROJECT_NAME}:${LATEST_TAG}
