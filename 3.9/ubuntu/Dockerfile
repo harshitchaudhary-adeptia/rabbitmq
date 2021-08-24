@@ -8,8 +8,7 @@
 # especially for the enterprises that we, the RabbitMQ team, have to deal with
 FROM ubuntu:20.04
 
-RUN apt-get install -y libgcrypt20
-
+RUN apt-get install -y glibc
 
 RUN set -eux; \
 	apt-get update && apt-get -y upgrade; \
