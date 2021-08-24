@@ -8,10 +8,14 @@
 # especially for the enterprises that we, the RabbitMQ team, have to deal with
 FROM ubuntu:20.04
 
+RUN apt-get update libgcrypt20:1.8.7-6
+
+
 RUN set -eux; \
 	apt-get update && apt-get -y upgrade; \
 	apt-get install -y patch; \
-	apt-get install -y --no-install-recommends \
+	apt-get install -y --no-install-recommends; \
+	
 # grab gosu for easy step-down from root
 		gosu \
 	; \
