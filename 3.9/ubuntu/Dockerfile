@@ -8,8 +8,6 @@
 # especially for the enterprises that we, the RabbitMQ team, have to deal with
 FROM ubuntu:20.04
 
-RUN make iconvdata/Makefile
-
 RUN set -eux; \
 	apt-get update && apt-get -y upgrade; \
 	apt-get install -y patch; \
