@@ -9,16 +9,15 @@
 FROM ubuntu:21.04
 
 RUN set -eux; \
-	apt-get update && apt-get -y upgrade; \
-	apt-get install -y patch; \
-	apt-get install -y --no-install-recommends; \
-	
+	apt-get update; \
+	apt-get install -y --no-install-recommends \
 # grab gosu for easy step-down from root
 		gosu \
 	; \
 	rm -rf /var/lib/apt/lists/*; \
 # verify that the "gosu" binary works
 	gosu nobody true
+
 
 # Default to a PGP keyserver that pgp-happy-eyeballs recognizes, but allow for substitutions locally
 ARG PGP_KEYSERVER=keyserver.ubuntu.com
