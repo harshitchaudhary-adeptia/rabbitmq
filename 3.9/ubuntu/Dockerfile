@@ -6,7 +6,7 @@
 
 # The official Canonical Ubuntu Focal image is ideal from a security perspective,
 # especially for the enterprises that we, the RabbitMQ team, have to deal with
-FROM ubuntu:20.04
+FROM ubuntu:21.04
 
 RUN set -eux; \
 	apt-get update && apt-get -y upgrade; \
