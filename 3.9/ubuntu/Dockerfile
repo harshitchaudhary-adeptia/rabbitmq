@@ -9,7 +9,7 @@
 FROM ubuntu:21.04
 
 RUN set -eux; \
-	apt-get update && apt-get -y upgrade; \
+	apt-get update; \
 	apt-get install -y --no-install-recommends \
 # grab gosu for easy step-down from root
 		gosu \
